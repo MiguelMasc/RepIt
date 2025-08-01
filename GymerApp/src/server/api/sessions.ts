@@ -86,7 +86,7 @@ export async function createSession(
 
   const sessionId = uuidv4();
   const {type, name, date, session_data} = data;
-  console.log(date)
+  console.log(date);
 
   // Parse session_data using Claude Haiku
   const message = await anthropic.messages.create({
@@ -322,7 +322,7 @@ export async function getAISessions(
       if (AIparams.dateRange) {
         conditions.push(
           sql`${date} >= ${new Date(AIparams.dateRange.startDate).toISOString().split('T')[0]}`,
-          sql`${date} < ${new Date(AIparams.dateRange.endDate).toISOString().split('T')[0]}::date + interval '1 day'`
+          sql`${date} < ${new Date(AIparams.dateRange.endDate).toISOString().split('T')[0]}::date + interval '1 day'`,
         );
       }
 
@@ -530,7 +530,7 @@ export async function answerQuestion(query: string): Promise<string> {
       },
     ],
   });
-  console.log("answer")
+  console.log('answer');
   console.log(answer);
 
   return answer.content[0].type === 'text'

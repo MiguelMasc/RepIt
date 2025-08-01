@@ -1,5 +1,5 @@
 {
-  //"extends": "./node_modules/gts/tsconfig-google.json",
+  "extends": "./node_modules/gts/tsconfig-google.json",
   "ts-node": {
      "compilerOptions": {
        "module": "ESNext",
@@ -8,15 +8,14 @@
   },
   "compilerOptions": {
     "lib": [
-      // "ES2023", // from gts
+      "ES2023", // from gts
       "dom",
       "dom.iterable",
       "esnext",
     ],
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "composite": true,
-    // "module": "commonjs", // from gts
+    "module": "commonjs", // from gts
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,

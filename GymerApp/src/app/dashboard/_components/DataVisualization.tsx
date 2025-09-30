@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {Bar, BarChart, CartesianGrid, Line, LineChart, XAxis} from 'recharts';
 import {
@@ -61,7 +63,6 @@ export const DataVisualization = ({
           />
           <ChartTooltip content={<ChartTooltipContent />} />
           <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
-          <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
         </BarChart>
       ) : (
         <LineChart accessibilityLayer data={data}>
@@ -80,14 +81,6 @@ export const DataVisualization = ({
             stroke="var(--color-desktop)"
             strokeWidth={2}
             dot={{fill: 'var(--color-desktop)', strokeWidth: 0}}
-            activeDot={{r: 6, strokeWidth: 0}}
-          />
-          <Line
-            type="monotone"
-            dataKey="mobile"
-            stroke="var(--color-mobile)"
-            strokeWidth={2}
-            dot={{fill: 'var(--color-mobile)', strokeWidth: 0}}
             activeDot={{r: 6, strokeWidth: 0}}
           />
         </LineChart>

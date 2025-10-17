@@ -5,6 +5,7 @@ export * from './tables/session';
 export * from './tables/facilities';
 export * from './tables/goal';
 export * from './tables/supplement';
+export * from './tables/note';
 
 export * from './relations/workout';
 export * from './relations/exercise';

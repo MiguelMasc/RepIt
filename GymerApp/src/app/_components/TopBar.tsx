@@ -41,9 +41,9 @@ const Topbar = () => {
         case 'dashboard':
           router.push('/dashboard');
           break;
-        case 'facilities':
-          router.push('/facilities');
-          break;
+        // case 'facilities':
+        //   router.push('/facilities');
+        //   break;
         case 'sessions':
           router.push('/sessions');
           break;
@@ -61,7 +61,7 @@ const Topbar = () => {
     }
   };
 
-  const links = ['dashboard', 'facilities', 'sessions', 'goals', 'supplements'];
+  const links = ['dashboard', 'sessions', 'goals', 'supplements'];
 
   return (
     <>

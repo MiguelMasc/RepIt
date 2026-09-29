@@ -55,3 +55,11 @@ npm start
 yarn build
 yarn start
 ```
+
+## Tech Stack
+
+- **Framework:** Next.js (frontend + API routes)
+- **Language:** TypeScript
+- **Database:** PostgreSQL (hosted on Neon)
+- **ORM:** Drizzle ORM
+  

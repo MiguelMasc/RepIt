@@ -62,4 +62,5 @@ yarn start
 - **Language:** TypeScript
 - **Database:** PostgreSQL (hosted on Neon)
 - **ORM:** Drizzle ORM
+- **Testing**: Jest
   

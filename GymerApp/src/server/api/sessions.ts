@@ -46,6 +46,20 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Returns the text of a response, skipping any non-text blocks (e.g. thinking)
+function textOf(message: Anthropic.Message): string {
+  for (const block of message.content) {
+    if (block.type === 'text') {
+      let text = block.text;
+      if (text.startsWith('```')) {
+        text = text.slice(7, -3);
+      }
+      return text;
+    }
+  }
+  return '';
+}
+
 /**
  * Fetches the session history for the authenticated user.
  * @returns {Promise<Session[]>} List of user sessions.
@@ -90,8 +104,8 @@ export async function createSession(
 
   // Parse session_data using Claude Haiku
   const message = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
     messages: [
       {
         role: 'user',
@@ -101,9 +115,8 @@ export async function createSession(
   });
 
   // Extract JSON from Haiku's response
-  // The content will be in the first content block's value
-  const parsed_data =
-    message.content[0].type === 'text' ? message.content[0].text : '';
+  // The content will be in the response's text block
+  const parsed_data = textOf(message);
 
   await db
     .insert(SessionsTable)
@@ -168,8 +181,8 @@ export async function updateSession(
 
   // Parse session_data using Claude Haiku
   const message = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
     messages: [
       {
         role: 'user',
@@ -179,9 +192,8 @@ export async function updateSession(
   });
 
   // Extract JSON from Haiku's response
-  // The content will be in the first content block's value
-  const parsed_data =
-    message.content[0].type === 'text' ? message.content[0].text : '';
+  // The content will be in the response's text block
+  const parsed_data = textOf(message);
 
   try {
     await db
@@ -297,7 +309,7 @@ export async function getAISessions(
   sessions = await db.query.SessionsTable.findMany({
     where: (
       {name, type, parsed_data, user_id, date},
-      {and, or, like, eq, gte, lte, sql},
+      {and, or, like, eq, sql},
     ) => {
       const conditions: SQL<unknown>[] = [eq(user_id, userId)];
 
@@ -354,9 +366,8 @@ export async function getAIParameters(
 
   // get time range using Claude Haiku
   const response = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
-    temperature: 0,
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
     messages: [
       {
         role: 'user',
@@ -400,8 +411,8 @@ export async function getAIParameters(
   console.log(typeof response);
   console.log(response);
 
-  if (response.content[0].type === 'text') {
-    const parsedText = JSON.parse(response.content[0].text); //object
+  if (textOf(response) !== '') {
+    const parsedText = JSON.parse(textOf(response)); //object
     const responseText = JSON.stringify(parsedText);
 
     console.log(typeof responseText);
@@ -420,15 +431,13 @@ export async function getAIParameters(
   };
 
   params.keywords =
-    response.content[0].type === 'text' &&
-    JSON.parse(response.content[0].text).parameters.keywords
-      ? JSON.parse(response.content[0].text).parameters.keywords
+    textOf(response) !== '' && JSON.parse(textOf(response)).parameters.keywords
+      ? JSON.parse(textOf(response)).parameters.keywords
       : undefined;
 
   params.dateRange =
-    response.content[0].type === 'text' &&
-    JSON.parse(response.content[0].text).parameters.dateRange
-      ? JSON.parse(response.content[0].text).parameters.dateRange
+    textOf(response) !== '' && JSON.parse(textOf(response)).parameters.dateRange
+      ? JSON.parse(textOf(response)).parameters.dateRange
       : undefined;
 
   console.log(
@@ -448,9 +457,8 @@ export async function answerQuestion(query: string): Promise<string> {
 
   // get time range using Claude Haiku
   const response = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
-    temperature: 0,
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
     messages: [
       {
         role: 'user',
@@ -465,8 +473,7 @@ export async function answerQuestion(query: string): Promise<string> {
     ],
   });
 
-  const dateRange =
-    response.content[0].type === 'text' ? response.content[0].text : '';
+  const dateRange = textOf(response);
 
   const {userId, redirectToSignIn} = auth();
   let sessions: AISession[] = [];
@@ -484,9 +491,8 @@ export async function answerQuestion(query: string): Promise<string> {
   //analyze data and answer question
   // get time range using Claude Haiku
   const answer = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
-    temperature: 0,
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
     system: `You are an expert in this session history ${JSON.stringify(sessions)}. 
              
              Each session has a name, a date, a type and a parsed_data section. 
@@ -533,8 +539,8 @@ export async function answerQuestion(query: string): Promise<string> {
   console.log('answer');
   console.log(answer);
 
-  return answer.content[0].type === 'text'
-    ? JSON.parse(answer.content[0].text).analysis
+  return textOf(answer) !== ''
+    ? JSON.parse(textOf(answer)).analysis
     : 'An answer could not be given';
 }
 
@@ -567,9 +573,8 @@ export async function answerQuestionSplit(query: string): Promise<string> {
   //analyze data and answer question
   // get time range using Claude Haiku
   const answer = await anthropic.messages.create({
-    model: 'claude-3-haiku-20240307',
-    max_tokens: 1024,
-    temperature: 0,
+    model: 'claude-haiku-5-5',
+    max_tokens: 16000,
     system: `You are an expert in this session history ${JSON.stringify(sessions)}. 
               The date is ${currentDate}.
               
@@ -653,15 +658,10 @@ export async function answerQuestionSplit(query: string): Promise<string> {
     ],
   });
 
-  if (answer.content[0].type === 'text') {
-    console.log(answer.content[0].text);
-  } else {
-    alert('This question can not be answered with the given data.');
+  if (textOf(answer) === '') {
     return 'An answer could not be given';
   }
+  console.log(textOf(answer));
 
-  return answer.content[0].type === 'text' &&
-    JSON.parse(answer.content[0].text).analysis
-    ? JSON.parse(answer.content[0].text).analysis
-    : 'An answer could not be given';
+  return JSON.parse(textOf(answer)).analysis;
 }
